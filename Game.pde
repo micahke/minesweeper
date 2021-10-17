@@ -1,6 +1,3 @@
-
-
-
 public class Game {
   
   Board board;
