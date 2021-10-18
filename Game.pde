@@ -18,23 +18,20 @@ public class Game {
   
   
   public void handleMouseInput() {
-    if (board.getClickedCell() != null) {
-      Cell cell = board.getClickedCell();
+    Cell cell = board.getClickedCell();
+    if (cell != null) {
       if (mouseButton == RIGHT) {
         cell.mark();
       } else if (mouseButton == LEFT) {
-        if (cell.isBomb) {
-          System.out.println("DEAD");
-          cell.uncover();
+        if (!gameStart) {
+          System.out.println("start game");
+          gameStart = true;
+          board.setStart(cell.getRow(), cell.getCol());
+          board.setupBombs();
+          board.checkCellNums();
+          board.uncoverCells(cell);
         } else {
-          if (gameStart != true) {
-            cell.uncover();
-            gameStart = true;
-             board.setupBombs();
-             board.checkCellNums();
-           } else {
-             board.uncoverCells(cell);
-           }
+          cell.uncover();
         }
       }
     }

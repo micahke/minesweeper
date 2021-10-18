@@ -38,7 +38,7 @@ public class Cell {
     rect(x, y,cellSize, cellSize);
     
     // DRAW OBJECTS ON TOP
-    if (status == Status.UNCOVERED) {
+    if (status == Status.UNCOVERED) { 
       if (isBomb) {
         fill(0, 0, 0);
         float cX = x + (circleSize);
@@ -96,6 +96,7 @@ public class Cell {
   public int getRow() {
     return row;
   }
+    
   
   public int getCol() {
     return col;

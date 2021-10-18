@@ -7,6 +7,8 @@ public class Board {
   int rows;
   int columns;
   int bombs;
+  int startX;
+  int startY;
 
   public Board(int rows, int columns, int bombs) {
     board = new Cell[rows][columns];
@@ -37,9 +39,14 @@ public class Board {
       int randCol = (int)(Math.random() * board[0].length);
       Cell cell = board[randRow][randCol];
       if (!cell.isBomb) {
-        cell.isBomb(true);
-        numBombs--;
-        System.out.println("added bomb");
+        if (cell.status == Status.COVERED) {
+          if (randRow < (startX - 1) || randRow > (startX + 1)) {
+            if (randCol < (startY - 1) || randRow > (startY + 1)) {
+              cell.isBomb(true);
+              numBombs--;
+            }
+          }
+        }
       }
     }
     
@@ -79,16 +86,19 @@ public class Board {
     }
   }
   
+  public void setStart(int x, int y) {
+    this.startX = x;
+    this.startY = y;
+  }
+  
   public ArrayList <Cell> getAdjacentEmpties(Cell cell) {
     ArrayList<Cell> adjacentCells = new ArrayList<Cell>();
     for (int i = cell.getRow() - 1; i <= cell.getRow() + 1; i++) {
       for (int j = cell.getCol() - 1; j <= cell.getCol() + 1; j++) {
         try {
           Cell neighborCell = board[i][j];
-          if (neighborCell.getNumBombs() == 0 && neighborCell.status != Status.MARKED) {
-            if (neighborCell.status == Status.COVERED) {
-              adjacentCells.add(neighborCell);
-            }
+          if (neighborCell.numBombs == 0 && neighborCell.status == Status.COVERED) {
+            adjacentCells.add(neighborCell);
           }
         } catch (ArrayIndexOutOfBoundsException e) {
           // error
@@ -100,13 +110,12 @@ public class Board {
   
   public void uncoverCells(Cell cell) {
     cell.uncover();
-    ArrayList<Cell> empties = getAdjacentEmpties(cell);
-    if (empties.size() >= 0) {
+    ArrayList<Cell> zeros = getAdjacentEmpties(cell);
+    if (zeros.size() == 0) {
       return;
-    } else {
-      for (Cell c : empties) {
-        uncoverCells(c);
-      }
+    }
+    for (Cell c : zeros) {
+      getAdjacentEmpties(c);
     }
   }
   
