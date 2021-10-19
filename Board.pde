@@ -33,6 +33,7 @@ public class Board {
   }
 
   void setupBombs() {
+    System.out.println("Placing bombs");
     int numBombs = this.bombs;
     while (numBombs > 0) {
       int randRow = (int)(Math.random() * board.length);
@@ -43,13 +44,14 @@ public class Board {
           if (randRow < (startX - 1) || randRow > (startX + 1)) {
             if (randCol < (startY - 1) || randRow > (startY + 1)) {
               cell.isBomb(true);
+              System.out.println("Placing bomb at " + randRow + ", " + randCol);
               numBombs--;
             }
           }
         }
       }
     }
-    
+    System.out.println("Finished placing bombs");
   }
 
   void draw() {
@@ -86,9 +88,11 @@ public class Board {
     }
   }
   
-  public void setStart(int x, int y) {
-    this.startX = x;
-    this.startY = y;
+  public void setStart(Cell cell) {
+    this.startX = cell.getRow();
+    this.startY = cell.getCol();
+    cell.uncover();
+    
   }
   
   public ArrayList <Cell> getAdjacentEmpties(Cell cell) {
@@ -97,7 +101,7 @@ public class Board {
       for (int j = cell.getCol() - 1; j <= cell.getCol() + 1; j++) {
         try {
           Cell neighborCell = board[i][j];
-          if (neighborCell.numBombs == 0) {
+          if ((neighborCell.numBombs >= 0 && !neighborCell.isBomb) && neighborCell.status == Status.COVERED) {
             adjacentCells.add(neighborCell);
           }
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -109,6 +113,14 @@ public class Board {
   }
   
   public void uncoverCells(Cell cell) {
+    ArrayList<Cell> cells = getAdjacentEmpties(cell);
+    cell.uncover();
+    if (cell.numBombs > 0) {
+      return;
+    }
+    for (Cell c : cells) {
+      uncoverCells(c);
+    }
   }
   
   public Cell getClickedCell() {

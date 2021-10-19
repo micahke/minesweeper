@@ -24,15 +24,16 @@ public class Game {
         cell.mark();
       } else if (mouseButton == LEFT) {
         if (!gameStart) {
-          System.out.println("start game");
+          System.out.println("Starting game");
           gameStart = true;
-          board.setStart(cell.getRow(), cell.getCol());
+          board.setStart(cell);
           board.setupBombs();
           board.checkCellNums();
           board.uncoverCells(cell);
-        } else {
-          cell.uncover();
+        } else if (cell.numBombs == 0) {
+          board.uncoverCells(cell);
         }
+        cell.uncover();
       }
     }
   }

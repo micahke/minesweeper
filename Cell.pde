@@ -57,7 +57,7 @@ public class Cell {
     float textX = x + (cellSize / 2);
     float textY = y + (cellSize / 2) + 3;
     textAlign(CENTER);
-    if (numBombs > 0)
+    if (numBombs > 0 && status == Status.UNCOVERED)
       text("" + numBombs, textX, textY);
   }
   
