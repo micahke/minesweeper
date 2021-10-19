@@ -38,17 +38,11 @@ public class Board {
     while (numBombs > 0) {
       int randRow = (int)(Math.random() * board.length);
       int randCol = (int)(Math.random() * board[0].length);
+      //System.out.println("Starting at " + startX + ", " + startY);
       Cell cell = board[randRow][randCol];
-      if (!cell.isBomb) {
-        if (cell.status == Status.COVERED) {
-          if (randRow < (startX - 1) || randRow > (startX + 1)) {
-            if (randCol < (startY - 1) || randRow > (startY + 1)) {
-              cell.isBomb(true);
-              System.out.println("Placing bomb at " + randRow + ", " + randCol);
-              numBombs--;
-            }
-          }
-        }
+      if (!cell.isReserved() && !cell.isBomb) {
+        cell.isBomb(true);
+        numBombs--;
       }
     }
     System.out.println("Finished placing bombs");
@@ -92,7 +86,17 @@ public class Board {
     this.startX = cell.getRow();
     this.startY = cell.getCol();
     cell.uncover();
+    setReservedCells(cell);
     
+  }
+  
+  public void setReservedCells(Cell cell) {
+    System.out.println("reserving cells");
+    for (int i = cell.getRow() - 1; i <= cell.getRow() + 1; i++) {
+      for (int j = cell.getCol() - 1; j <= cell.getCol() + 1; j++) {
+        board[i][j].setReserved(true);
+      }
+    }
   }
   
   public ArrayList <Cell> getAdjacentEmpties(Cell cell) {
@@ -136,4 +140,9 @@ public class Board {
     }
     return null;
   }
+  
+  public Cell[][] getBoard() {
+    return board;
+  }
+  
 }

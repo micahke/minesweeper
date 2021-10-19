@@ -8,6 +8,7 @@ public class Cell {
   int col;
   int numBombs;
   boolean isBomb;
+  boolean reserved = false;
   
   float circleSize;
   
@@ -25,6 +26,14 @@ public class Cell {
   
   public void setNumBombs(int numBombs) {
     this.numBombs = numBombs;
+  }
+  
+  public void setReserved(boolean reserved) {
+    this.reserved = reserved;
+  }
+  
+  public boolean isReserved() {
+    return this.reserved;
   }
   
   public void draw() {
@@ -82,7 +91,12 @@ public class Cell {
   }
   
   public void mark() {
-    status = Status.MARKED;
+    if (status == Status.MARKED) {
+      status = Status.COVERED;
+    } else {
+      
+      status = Status.MARKED;
+    }
   }
   
   public void setStatus(Status status) {
