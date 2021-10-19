@@ -97,7 +97,7 @@ public class Board {
       for (int j = cell.getCol() - 1; j <= cell.getCol() + 1; j++) {
         try {
           Cell neighborCell = board[i][j];
-          if (neighborCell.numBombs == 0 && neighborCell.status == Status.COVERED) {
+          if (neighborCell.numBombs == 0) {
             adjacentCells.add(neighborCell);
           }
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -109,14 +109,6 @@ public class Board {
   }
   
   public void uncoverCells(Cell cell) {
-    cell.uncover();
-    ArrayList<Cell> zeros = getAdjacentEmpties(cell);
-    if (zeros.size() == 0) {
-      return;
-    }
-    for (Cell c : zeros) {
-      getAdjacentEmpties(c);
-    }
   }
   
   public Cell getClickedCell() {
