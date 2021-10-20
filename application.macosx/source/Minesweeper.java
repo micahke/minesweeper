@@ -15,24 +15,62 @@ import java.io.IOException;
 public class Minesweeper extends PApplet {
 
 Game game;
+int bombs = 400;
+int status = 0;
+
 public void setup() {
   
   frameRate(30);
-  game = new Game(10, 10, 40);
 }
 
-public void update() {
-  
-}
 
 public void draw() {
-  update();
   background(204);
-  game.draw();
+  if (status == 0) {
+    drawIntro();
+  } else {
+    game.draw();
+  }
 }
 
-public void mouseClicked() {
-  game.handleMouseInput();
+public void drawIntro() {
+    textSize(40);
+    fill(0, 0, 0);
+    text("Welcome to Minesweeper!", 55, 200);
+    textSize(18);
+    text("Select a grid size below: ", 55, 230);
+    text("[1] : 10 x 10", 55, 260);
+    text("[2] : 20 x 20", 55, 290);
+    text("[3] : 30 x 30", 55, 320);
+    text("[4] : 40 x 40", 55, 350);
+    text("[5] : 50 x 50", 55, 380);
+}
+
+public void mousePressed() {
+  //System.out.println("clicked");
+  if (status > 0)
+    game.handleMouseInput();
+}
+
+public void keyReleased() {
+  if (status == 0) {
+    if (key == '1') {
+      game = new Game(10, 10, 40);
+      status = 1;
+    } else if (key == '2') {
+      game = new Game(20, 20, 80);
+      status = 1;
+    } else if (key == '3') {
+      game = new Game(30, 30, 160);
+      status = 1;
+    } else if (key == '4') {
+      game = new Game(40, 40, 320);
+      status = 1;
+    } else if (key == '5') {
+      game = new Game(50, 50, 740);
+      status = 1;
+    }
+  }
 }
 public class Board {
 
@@ -43,6 +81,8 @@ public class Board {
   int rows;
   int columns;
   int bombs;
+  int startX;
+  int startY;
 
   public Board(int rows, int columns, int bombs) {
     board = new Cell[rows][columns];
@@ -52,8 +92,8 @@ public class Board {
   }
 
   public void init() {
-    float width = 600;
-    float height = 650;
+    float width = 700;
+    float height = 750;
     float cellSize = (float)(width / columns);
     float y = (float)(height - (cellSize * rows));
     for (int row = 0; row < board.length; row++) {
@@ -67,18 +107,19 @@ public class Board {
   }
 
   public void setupBombs() {
+    System.out.println("Placing bombs");
     int numBombs = this.bombs;
     while (numBombs > 0) {
       int randRow = (int)(Math.random() * board.length);
       int randCol = (int)(Math.random() * board[0].length);
+      //System.out.println("Starting at " + startX + ", " + startY);
       Cell cell = board[randRow][randCol];
-      if (!cell.isBomb) {
+      if (!cell.isReserved() && !cell.isBomb) {
         cell.isBomb(true);
         numBombs--;
-        System.out.println("added bomb");
       }
     }
-    
+    System.out.println("Finished placing bombs");
   }
 
   public void draw() {
@@ -115,16 +156,31 @@ public class Board {
     }
   }
   
+  public void setStart(Cell cell) {
+    this.startX = cell.getRow();
+    this.startY = cell.getCol();
+    cell.uncover();
+    setReservedCells(cell);
+    
+  }
+  
+  public void setReservedCells(Cell cell) {
+    System.out.println("reserving cells");
+    for (int i = cell.getRow() - 1; i <= cell.getRow() + 1; i++) {
+      for (int j = cell.getCol() - 1; j <= cell.getCol() + 1; j++) {
+        board[i][j].setReserved(true);
+      }
+    }
+  }
+  
   public ArrayList <Cell> getAdjacentEmpties(Cell cell) {
     ArrayList<Cell> adjacentCells = new ArrayList<Cell>();
     for (int i = cell.getRow() - 1; i <= cell.getRow() + 1; i++) {
       for (int j = cell.getCol() - 1; j <= cell.getCol() + 1; j++) {
         try {
           Cell neighborCell = board[i][j];
-          if (neighborCell.getNumBombs() == 0 && neighborCell.status != Status.MARKED) {
-            if (neighborCell.status == Status.COVERED) {
-              adjacentCells.add(neighborCell);
-            }
+          if ((neighborCell.numBombs >= 0 && !neighborCell.isBomb) && neighborCell.status == Status.COVERED) {
+            adjacentCells.add(neighborCell);
           }
         } catch (ArrayIndexOutOfBoundsException e) {
           // error
@@ -135,14 +191,13 @@ public class Board {
   }
   
   public void uncoverCells(Cell cell) {
+    ArrayList<Cell> cells = getAdjacentEmpties(cell);
     cell.uncover();
-    ArrayList<Cell> empties = getAdjacentEmpties(cell);
-    if (empties.size() >= 0) {
+    if (cell.numBombs > 0) {
       return;
-    } else {
-      for (Cell c : empties) {
-        uncoverCells(c);
-      }
+    }
+    for (Cell c : cells) {
+      uncoverCells(c);
     }
   }
   
@@ -159,6 +214,11 @@ public class Board {
     }
     return null;
   }
+  
+  public Cell[][] getBoard() {
+    return board;
+  }
+  
 }
 public class Cell {
  
@@ -170,6 +230,7 @@ public class Cell {
   int col;
   int numBombs;
   boolean isBomb;
+  boolean reserved = false;
   
   float circleSize;
   
@@ -189,6 +250,14 @@ public class Cell {
     this.numBombs = numBombs;
   }
   
+  public void setReserved(boolean reserved) {
+    this.reserved = reserved;
+  }
+  
+  public boolean isReserved() {
+    return this.reserved;
+  }
+  
   public void draw() {
     // RECTANGLE
     // SET COLORS
@@ -200,7 +269,7 @@ public class Cell {
     rect(x, y,cellSize, cellSize);
     
     // DRAW OBJECTS ON TOP
-    if (status == Status.UNCOVERED) {
+    if (status == Status.UNCOVERED) { 
       if (isBomb) {
         fill(0, 0, 0);
         float cX = x + (circleSize);
@@ -218,8 +287,9 @@ public class Cell {
     fill(0, 0, 0);
     float textX = x + (cellSize / 2);
     float textY = y + (cellSize / 2) + 3;
+    textSize(cellSize / 2);
     textAlign(CENTER);
-    if (numBombs > 0)
+    if (numBombs > 0 && status == Status.UNCOVERED)
       text("" + numBombs, textX, textY);
   }
   
@@ -244,7 +314,12 @@ public class Cell {
   }
   
   public void mark() {
-    status = Status.MARKED;
+    if (status == Status.MARKED) {
+      status = Status.COVERED;
+    } else {
+      
+      status = Status.MARKED;
+    }
   }
   
   public void setStatus(Status status) {
@@ -258,6 +333,7 @@ public class Cell {
   public int getRow() {
     return row;
   }
+    
   
   public int getCol() {
     return col;
@@ -268,14 +344,49 @@ public class Game {
   
   Board board;
   boolean gameStart = false;
+  int bombs;
+  int status = 0;
   
   public Game(int rows, int columns, int bombs) {
     board = new Board(rows, columns, bombs);
+    this.bombs = bombs;
     board.init();
   }
   
   public void draw() {
+    int numFlags = game.checkFlags();
+    textSize(20);
+    if (status == 0) {
+      text("Bombs left: " + (bombs - numFlags), 325, 30);
+    } else if (status == 1) {
+      fill(255, 0, 0);
+      text("BOMB! GAME OVER!!!", 325, 30);
+    } else {
+      fill(0, 255, 0);
+      text("GAME WON!!", 325, 30);
+    }
+    textAlign(CENTER);
+    text("developed by Micah Elias", 350, 775);
+    if (bombs - numFlags == 0) {
+      if (checkWin()) {
+        status = 2;
+      }
+    }
     board.draw();
+  }
+  
+  public boolean checkWin() {
+    Cell[][] board = this.board.getBoard();
+    for (int row = 0; row < board.length; row++) {
+      for (int col = 0; col < board[0].length; col++) {
+        if (board[row][col].status == Status.MARKED) {
+          if (!board[row][col].isBomb) {
+            return false;
+          }
+        }
+      }
+    }
+    return true;
   }
   
   public Board board() {
@@ -284,26 +395,43 @@ public class Game {
   
   
   public void handleMouseInput() {
-    if (board.getClickedCell() != null) {
+    if (status == 0) {
       Cell cell = board.getClickedCell();
-      if (mouseButton == RIGHT) {
-        cell.mark();
-      } else if (mouseButton == LEFT) {
-        if (cell.isBomb) {
-          System.out.println("DEAD");
+      if (cell != null) {
+        if (mouseButton == RIGHT) {
+          cell.mark();
+        } else if (mouseButton == LEFT) {
           cell.uncover();
-        } else {
-          if (gameStart != true) {
-            cell.uncover();
+          redraw();
+          if (!gameStart) {
+            System.out.println("Starting game");
             gameStart = true;
-             board.setupBombs();
-             board.checkCellNums();
-           } else {
-             board.uncoverCells(cell);
-           }
+            board.setStart(cell);
+            board.setupBombs();
+            board.checkCellNums();
+            board.uncoverCells(cell);
+          } else if (cell.numBombs == 0 && !cell.isBomb) {
+            board.uncoverCells(cell);
+          }
+          if (cell.isBomb) {
+            status = 1;
+          }
         }
       }
     }
+  }
+  
+  public int checkFlags() {
+    int total = 0;
+    Cell[][] board = this.board.getBoard();
+    for (int row = 0; row < board.length; row++) {
+      for (int col = 0; col < board[0].length; col++) {
+        if (board[row][col].status == Status.MARKED) {
+          total++;
+        }
+      }
+    }
+    return total;
   }
 }
 public enum Status {
@@ -311,7 +439,7 @@ public enum Status {
   UNCOVERED,
   MARKED
 }
-  public void settings() {  size(600, 650); }
+  public void settings() {  size(700, 750); }
   static public void main(String[] passedArgs) {
     String[] appletArgs = new String[] { "Minesweeper" };
     if (passedArgs != null) {

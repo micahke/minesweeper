@@ -7,6 +7,8 @@ public class Board {
   int rows;
   int columns;
   int bombs;
+  int startX;
+  int startY;
 
   public Board(int rows, int columns, int bombs) {
     board = new Cell[rows][columns];
@@ -16,8 +18,8 @@ public class Board {
   }
 
   void init() {
-    float width = 600;
-    float height = 650;
+    float width = 700;
+    float height = 750;
     float cellSize = (float)(width / columns);
     float y = (float)(height - (cellSize * rows));
     for (int row = 0; row < board.length; row++) {
@@ -31,18 +33,19 @@ public class Board {
   }
 
   void setupBombs() {
+    System.out.println("Placing bombs");
     int numBombs = this.bombs;
     while (numBombs > 0) {
       int randRow = (int)(Math.random() * board.length);
       int randCol = (int)(Math.random() * board[0].length);
+      //System.out.println("Starting at " + startX + ", " + startY);
       Cell cell = board[randRow][randCol];
-      if (!cell.isBomb) {
+      if (!cell.isReserved() && !cell.isBomb) {
         cell.isBomb(true);
         numBombs--;
-        System.out.println("added bomb");
       }
     }
-    
+    System.out.println("Finished placing bombs");
   }
 
   void draw() {
@@ -79,16 +82,31 @@ public class Board {
     }
   }
   
+  public void setStart(Cell cell) {
+    this.startX = cell.getRow();
+    this.startY = cell.getCol();
+    cell.uncover();
+    setReservedCells(cell);
+    
+  }
+  
+  public void setReservedCells(Cell cell) {
+    System.out.println("reserving cells");
+    for (int i = cell.getRow() - 1; i <= cell.getRow() + 1; i++) {
+      for (int j = cell.getCol() - 1; j <= cell.getCol() + 1; j++) {
+        board[i][j].setReserved(true);
+      }
+    }
+  }
+  
   public ArrayList <Cell> getAdjacentEmpties(Cell cell) {
     ArrayList<Cell> adjacentCells = new ArrayList<Cell>();
     for (int i = cell.getRow() - 1; i <= cell.getRow() + 1; i++) {
       for (int j = cell.getCol() - 1; j <= cell.getCol() + 1; j++) {
         try {
           Cell neighborCell = board[i][j];
-          if (neighborCell.getNumBombs() == 0 && neighborCell.status != Status.MARKED) {
-            if (neighborCell.status == Status.COVERED) {
-              adjacentCells.add(neighborCell);
-            }
+          if ((neighborCell.numBombs >= 0 && !neighborCell.isBomb) && neighborCell.status == Status.COVERED) {
+            adjacentCells.add(neighborCell);
           }
         } catch (ArrayIndexOutOfBoundsException e) {
           // error
@@ -99,14 +117,13 @@ public class Board {
   }
   
   public void uncoverCells(Cell cell) {
+    ArrayList<Cell> cells = getAdjacentEmpties(cell);
     cell.uncover();
-    ArrayList<Cell> empties = getAdjacentEmpties(cell);
-    if (empties.size() >= 0) {
+    if (cell.numBombs > 0) {
       return;
-    } else {
-      for (Cell c : empties) {
-        uncoverCells(c);
-      }
+    }
+    for (Cell c : cells) {
+      uncoverCells(c);
     }
   }
   
@@ -123,4 +140,9 @@ public class Board {
     }
     return null;
   }
+  
+  public Cell[][] getBoard() {
+    return board;
+  }
+  
 }

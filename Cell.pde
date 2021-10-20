@@ -65,6 +65,7 @@ public class Cell {
     fill(0, 0, 0);
     float textX = x + (cellSize / 2);
     float textY = y + (cellSize / 2) + 3;
+    textSize(cellSize / 2);
     textAlign(CENTER);
     if (numBombs > 0 && status == Status.UNCOVERED)
       text("" + numBombs, textX, textY);

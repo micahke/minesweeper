@@ -18,8 +18,8 @@ public class Board {
   }
 
   void init() {
-    float width = 600;
-    float height = 650;
+    float width = 700;
+    float height = 750;
     float cellSize = (float)(width / columns);
     float y = (float)(height - (cellSize * rows));
     for (int row = 0; row < board.length; row++) {

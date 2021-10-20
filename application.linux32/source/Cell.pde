@@ -8,6 +8,7 @@ public class Cell {
   int col;
   int numBombs;
   boolean isBomb;
+  boolean reserved = false;
   
   float circleSize;
   
@@ -27,6 +28,14 @@ public class Cell {
     this.numBombs = numBombs;
   }
   
+  public void setReserved(boolean reserved) {
+    this.reserved = reserved;
+  }
+  
+  public boolean isReserved() {
+    return this.reserved;
+  }
+  
   public void draw() {
     // RECTANGLE
     // SET COLORS
@@ -38,7 +47,7 @@ public class Cell {
     rect(x, y,cellSize, cellSize);
     
     // DRAW OBJECTS ON TOP
-    if (status == Status.UNCOVERED) {
+    if (status == Status.UNCOVERED) { 
       if (isBomb) {
         fill(0, 0, 0);
         float cX = x + (circleSize);
@@ -56,8 +65,9 @@ public class Cell {
     fill(0, 0, 0);
     float textX = x + (cellSize / 2);
     float textY = y + (cellSize / 2) + 3;
+    textSize(cellSize / 2);
     textAlign(CENTER);
-    if (numBombs > 0)
+    if (numBombs > 0 && status == Status.UNCOVERED)
       text("" + numBombs, textX, textY);
   }
   
@@ -82,7 +92,12 @@ public class Cell {
   }
   
   public void mark() {
-    status = Status.MARKED;
+    if (status == Status.MARKED) {
+      status = Status.COVERED;
+    } else {
+      
+      status = Status.MARKED;
+    }
   }
   
   public void setStatus(Status status) {
@@ -96,6 +111,7 @@ public class Cell {
   public int getRow() {
     return row;
   }
+    
   
   public int getCol() {
     return col;

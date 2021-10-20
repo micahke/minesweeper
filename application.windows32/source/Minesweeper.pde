@@ -1,20 +1,58 @@
 Game game;
+int bombs = 400;
+int status = 0;
+
 void setup() {
-  size(600, 650);
+  size(700, 750);
   frameRate(30);
-  game = new Game(10, 10, 40);
 }
 
-void update() {
-  
-}
 
 void draw() {
-  update();
   background(204);
-  game.draw();
+  if (status == 0) {
+    drawIntro();
+  } else {
+    game.draw();
+  }
 }
 
-void mouseClicked() {
-  game.handleMouseInput();
+void drawIntro() {
+    textSize(40);
+    fill(0, 0, 0);
+    text("Welcome to Minesweeper!", 55, 200);
+    textSize(18);
+    text("Select a grid size below: ", 55, 230);
+    text("[1] : 10 x 10", 55, 260);
+    text("[2] : 20 x 20", 55, 290);
+    text("[3] : 30 x 30", 55, 320);
+    text("[4] : 40 x 40", 55, 350);
+    text("[5] : 50 x 50", 55, 380);
+}
+
+void mousePressed() {
+  //System.out.println("clicked");
+  if (status > 0)
+    game.handleMouseInput();
+}
+
+void keyReleased() {
+  if (status == 0) {
+    if (key == '1') {
+      game = new Game(10, 10, 40);
+      status = 1;
+    } else if (key == '2') {
+      game = new Game(20, 20, 80);
+      status = 1;
+    } else if (key == '3') {
+      game = new Game(30, 30, 160);
+      status = 1;
+    } else if (key == '4') {
+      game = new Game(40, 40, 320);
+      status = 1;
+    } else if (key == '5') {
+      game = new Game(50, 50, 740);
+      status = 1;
+    }
+  }
 }

@@ -13,15 +13,18 @@ public class Game {
   
   void draw() {
     int numFlags = game.checkFlags();
+    textSize(20);
     if (status == 0) {
-      text("Bombs left: " + (bombs - numFlags), 300, 30);
+      text("Bombs left: " + (bombs - numFlags), 325, 30);
     } else if (status == 1) {
       fill(255, 0, 0);
-      text("BOMB! GAME OVER!!!", 300, 30);
+      text("BOMB! GAME OVER!!!", 325, 30);
     } else {
       fill(0, 255, 0);
-      text("GAME WON!!", 300, 30);
+      text("GAME WON!!", 325, 30);
     }
+    textAlign(CENTER);
+    text("developed by Micah Elias", 350, 775);
     if (bombs - numFlags == 0) {
       if (checkWin()) {
         status = 2;
