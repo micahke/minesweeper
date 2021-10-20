@@ -94,7 +94,11 @@ public class Board {
     System.out.println("reserving cells");
     for (int i = cell.getRow() - 1; i <= cell.getRow() + 1; i++) {
       for (int j = cell.getCol() - 1; j <= cell.getCol() + 1; j++) {
-        board[i][j].setReserved(true);
+        try {
+          board[i][j].setReserved(true);
+        } catch (ArrayIndexOutOfBoundsException e) {
+          // if checking a cell off the board
+        }
       }
     }
   }
